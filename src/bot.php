@@ -27,14 +27,6 @@ class ServerHandler extends VKCallbackApiServerHandler
         $splitted_dates = explode('-', $text_data);
         $date_start = strtotime($splitted_dates[0]);
         $date_end = strtotime($splitted_dates[1]);
-        if ($from == 135641618)
-        {
-            $response = $vk->messages()->send(static::ACCESS_TOKEN, [
-                'user_id' => 135641618,
-                'random_id' => rand(0, 9999),
-                'message' => $date_start." ".$date_end
-            ]);
-        }
         echo 'ok';
     }
 }
