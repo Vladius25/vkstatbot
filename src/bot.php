@@ -5,23 +5,6 @@ use VK\Client\VKApiClient;
 
 require __DIR__ . '/vendor/autoload.php';
 
-
-//
-//
-//
-//$vk = new VKApiClient('5.110');
-//$response = $vk->messages()->send($access_token, [
-//    'user_id'  => 135641618,
-//    'random_id' => rand(0, 9999),
-//    'message'    => 'hello'
-//]);
-//
-//$response = $vk->messages()->getHistory($access_token, [
-//    'offset' => 0,
-//    'count' => 1,
-//    'user_id'  => 135641618
-//]);
-
 class ServerHandler extends VKCallbackApiServerHandler
 {
     const SECRET = 'Oquuo5aiChei6ah';
