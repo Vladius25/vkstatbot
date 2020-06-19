@@ -55,6 +55,7 @@ class Authorization {
             file_put_contents(static::TOKEN_FILE, $response['access_token']);
             Utils::sendMsg($vk, static::ACCESS_TOKEN, $response['user_id'], "Вы успешно авторизованы");
             echo '<script>window.close();</script>';
+            exit(0);
         }
         echo 'Ошибка: не задан code';
     }
