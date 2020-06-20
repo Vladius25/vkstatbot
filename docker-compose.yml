@@ -10,14 +10,23 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ${PWD}/nginx.conf:/etc/nginx/nginx.conf:Z
+      - ${PWD}/config/nginx.conf:/etc/nginx/nginx.conf:Z
 
   phpfpm:
     image: bitnami/php-fpm:latest
+    depends_on:
+      - db
     networks:
       - app-tier
     volumes:
       - ${PWD}/src:/app:Z
+
+  db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: example
+    env_file:
+      - ${PWD}/config/db_env
 
 networks:
   app-tier:
