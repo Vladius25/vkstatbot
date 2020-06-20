@@ -14,6 +14,7 @@ class ServerHandler extends VKCallbackApiServerHandler
     private $group_id;
     private $api_v;
     private $community_token;
+    private $access_array;
 
     function __construct()
     {
@@ -23,6 +24,7 @@ class ServerHandler extends VKCallbackApiServerHandler
         $this->group_id = $config['group_id'];
         $this->community_token = $config['community_token'];
         $this->api_v = $config['api_v'];
+        $this->access_array = $config['access_array'];
     }
 
     function confirmation(int $group_id, ?string $secret)
@@ -35,21 +37,28 @@ class ServerHandler extends VKCallbackApiServerHandler
     public function messageNew(int $group_id, ?string $secret, array $object)
     {
         $from = $object['message']->from_id;
-        if ($from == 135641618) {
+        if (in_array($from, $this->access_array)) {
             $vk = new VKApiClient($this->api_v);
             $auth = new Authorization();
             $user_token = $auth->getToken();
             if(is_null($user_token)) {
                 Utils::sendMsg($vk, $this->community_token, $from, "Необходимо авторизоваться");
                 Utils::sendMsg($vk, $this->community_token, $from, $auth->makeTokenRequest());
-                exit(0);
+                die('ok');
             }
             $message_text = $object['message']->text;
             $splitted_dates = explode('-', $message_text);
+            if (count($splitted_dates) != 2) {
+                die('ok');
+            }
             $timestamp_from = strtotime($splitted_dates[0]);
             $timestamp_to = strtotime($splitted_dates[1]);
+            if ($timestamp_from == False || $timestamp_to == False){
+                die('ok');
+            }
+            $message_to_send = "test";
             $result = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
-            Utils::sendMsg($vk, $this->community_token, $from, 'test');
+            Utils::sendMsg($vk, $this->community_token, $from, $message_to_send);
         }
         echo 'ok';
     }
