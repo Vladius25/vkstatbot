@@ -9,23 +9,34 @@ require_once __DIR__ . '/utils.php';
 
 class ServerHandler extends VKCallbackApiServerHandler
 {
-    const SECRET = 'Oquuo5aiChei6ah';
-    const GROUP_ID = 152396040;
-    const CONFIRMATION_TOKEN = 'd2a60eda';
-    const ACCESS_TOKEN = '5f9071c17793443349971f3dc00ac71fa16d25e1c81cd39e8cb6447075499627dc4c9108a0713785dc9bb';
+    private $secret;
+    private $confirmation_token;
+    private $group_id;
+    private $api_v;
+    private $community_token;
+
+    function __construct()
+    {
+        $config = require('config.php');
+        $this->secret = $config['callback_secret'];
+        $this->confirmation_token = $config['callback_token'];
+        $this->group_id = $config['group_id'];
+        $this->community_token = $config['community_token'];
+        $this->api_v = $config['api_v'];
+    }
 
     function confirmation(int $group_id, ?string $secret)
     {
-        if ($secret === static::SECRET && $group_id === static::GROUP_ID) {
-            echo static::CONFIRMATION_TOKEN;
+        if ($secret === $this->secret && $group_id === $this->group_id) {
+            echo $this->confirmation_token;
         }
     }
 
     public function messageNew(int $group_id, ?string $secret, array $object)
     {
         $from = $object['message']->from_id;
-        if($from == 135641618) {
-            $vk = new VKApiClient('5.110');
+        if ($from == 135641618) {
+            $vk = new VKApiClient($this->api_v);
             $auth = new Authorization();
             $user_token = $auth->getToken();
             if(is_null($user_token)) {
@@ -37,8 +48,8 @@ class ServerHandler extends VKCallbackApiServerHandler
             $splitted_dates = explode('-', $message_text);
             $timestamp_from = strtotime($splitted_dates[0]);
             $timestamp_to = strtotime($splitted_dates[1]);
-            $result = Utils::getLids($vk, $user_token, static::GROUP_ID, $timestamp_from, $timestamp_to);
-            Utils::sendMsg($vk, static::ACCESS_TOKEN, $from, 'test');
+            $result = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
+            Utils::sendMsg($vk, $this->community_token, $from, 'test');
         }
         echo 'ok';
     }

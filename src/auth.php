@@ -10,28 +10,37 @@ use VK\OAuth\VKOAuth;
 use VK\OAuth\VKOAuthDisplay;
 use VK\OAuth\VKOAuthResponseType;
 
-class Authorization {
-    const TOKEN_FILE = 'token';
+class Authorization
+{
     const DISPLAY = VKOAuthDisplay::PAGE;
-    const STATE = "sadgdshsfdh";
     const SCOPE = array(VKOAuthUserScope::STATS, VKOAuthUserScope::ADS, VKOAuthUserScope::OFFLINE);
-    const ACCESS_TOKEN = '5f9071c17793443349971f3dc00ac71fa16d25e1c81cd39e8cb6447075499627dc4c9108a0713785dc9bb';
-    const GROUP_ID = 152396040;
-    private $client_id;
-    private $client_secret;
+    const STATE = "dngjksdhg";
+    private $token_file;
+    private $group_token;
+    private $group_id;
+    private $app_id;
+    private $app_secret;
     private $redirect_uri;
+    private $api_v;
 
-    function __construct() {
-        $this->client_id = 7515449;
-        $this->client_secret = 'QiaWAGimh6wnaGX10nV1';
-        $this->redirect_uri = 'http://localhost:8080/auth.php';
+    function __construct()
+    {
+        $config = require('config.php');
+        $this->app_id = $config['app_id'];
+        $this->app_secret = $config['app_secret'];
+        $this->redirect_uri = $config['redirect_uri'];
+        $this->token_file = $config['token_file'];
+        $this->group_token = $config['community_token'];
+        $this->group_id = $config['group_id'];
+        $this->api_v = $config['api_v'];
     }
 
-    function makeTokenRequest() {
+    function makeTokenRequest()
+    {
         $oauth = new VKOAuth();
         return $oauth->getAuthorizeUrl(
             VKOAuthResponseType::CODE,
-            $this->client_id,
+            $this->app_id,
             $this->redirect_uri,
             static::DISPLAY,
             static::SCOPE,
@@ -39,32 +48,32 @@ class Authorization {
         );
     }
 
-    function makeToken() {
-        if(isset($_GET['code'])) {
-            $code = $_GET['code'];
-            $oauth = new VKOAuth();
-            $vk = new VKApiClient('5.110');
-            $response = $oauth->getAccessToken($this->client_id, $this->client_secret, $this->redirect_uri, $code);
-            file_put_contents(static::TOKEN_FILE, $response['access_token']);
-            Utils::sendMsg($vk, static::ACCESS_TOKEN, $response['user_id'], "Вы успешно авторизованы");
-            echo '<script>window.close();</script>';
-            exit(0);
-        }
-        echo 'Ошибка: не задан code';
+    function makeToken()
+    {
+        $code = $_GET['code'];
+        $oauth = new VKOAuth();
+        $vk = new VKApiClient($this->api_v);
+        $response = $oauth->getAccessToken($this->app_id, $this->app_secret, $this->redirect_uri, $code);
+        file_put_contents($this->token_file, $response['access_token']);
+        Utils::sendMsg($vk, $this->group_token, $response['user_id'], "Вы успешно авторизованы");
+        echo /** @lang js */ '<script>window.close();</script>';
+        exit(0);
     }
 
-    function getToken() {
-        $token = file_get_contents(static::TOKEN_FILE);
-        if($this->isTokenValid($token)) {
+    function getToken()
+    {
+        $token = file_get_contents($this->token_file);
+        if ($this->isTokenValid($token)) {
             return $token;
         }
         return null;
     }
 
-    function isTokenValid(String $token) {
-        $vk = new VKApiClient("5.110");
+    function isTokenValid(string $token)
+    {
+        $vk = new VKApiClient($this->api_v);
         try {
-            Utils::getLids($vk, $token, static::GROUP_ID, 1, 1);
+            Utils::getLids($vk, $token, $this->group_id, 1, 1);
             return True;
         } catch (VKApiException $e) {
             return False;
@@ -72,5 +81,7 @@ class Authorization {
     }
 }
 
-$auth = new Authorization();
-$auth->makeToken();
+if (isset($_GET['code'])) {
+    $auth = new Authorization();
+    $auth->makeToken();
+}
