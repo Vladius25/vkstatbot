@@ -10,13 +10,6 @@ use VK\OAuth\VKOAuth;
 use VK\OAuth\VKOAuthDisplay;
 use VK\OAuth\VKOAuthResponseType;
 
-$oauth = new VKOAuth();
-$client_id = 7515449;
-$redirect_uri = 'http://localhost/main.php';
-$display = VKOAuthDisplay::PAGE;
-$scope = array(VKOAuthUserScope::STATS);
-$state = 'fgfgUfff';
-
 class Authorization {
     const TOKEN_FILE = 'token';
     const DISPLAY = VKOAuthDisplay::PAGE;
