@@ -19,4 +19,6 @@ return array(
     'token_file' => '',
     // Версия api vk
     'api_v' => '',
+    // ID пользователей, которым доступно общение с ботом
+    'access_array' => [],
 );
