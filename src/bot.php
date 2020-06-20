@@ -1,11 +1,11 @@
 <?php
 
-use VK\CallbackApi\Server\VKCallbackApiServerHandler;
-use VK\Client\VKApiClient;
-
 require __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/utils.php';
+
+use VK\CallbackApi\Server\VKCallbackApiServerHandler;
+use VK\Client\VKApiClient;
 
 class ServerHandler extends VKCallbackApiServerHandler
 {
