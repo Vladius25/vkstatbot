@@ -40,8 +40,8 @@ class ServerHandler extends VKCallbackApiServerHandler
             $auth = new Authorization();
             $user_token = $auth->getToken();
             if(is_null($user_token)) {
-                Utils::sendMsg($vk, static::ACCESS_TOKEN, $from, "Необходимо авторизоваться");
-                Utils::sendMsg($vk, static::ACCESS_TOKEN, $from, $auth->makeTokenRequest());
+                Utils::sendMsg($vk, $this->community_token, $from, "Необходимо авторизоваться");
+                Utils::sendMsg($vk, $this->community_token, $from, $auth->makeTokenRequest());
                 exit(0);
             }
             $message_text = $object['message']->text;
