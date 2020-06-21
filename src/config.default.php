@@ -21,4 +21,6 @@ return array(
     'api_v' => '',
     // ID пользователей, которым доступно общение с ботом
     'access_array' => [],
+    // Пароль от PostgreSQL
+    'pg_pass' => '',
 );
