@@ -1,1 +1,3 @@
+POSTGRES_DB=vkstatbot
+POSTGRES_USER=postgres
 POSTGRES_PASSWORD=developing
