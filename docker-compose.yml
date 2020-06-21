@@ -18,6 +18,8 @@ services:
       - db
     networks:
       - app-tier
+    ports:
+      - 5432:5432
     volumes:
       - ${PWD}/src:/app:Z
 
