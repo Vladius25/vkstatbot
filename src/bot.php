@@ -15,6 +15,7 @@ class ServerHandler extends VKCallbackApiServerHandler
     private $api_v;
     private $community_token;
     private $access_array;
+    private $account_id;
 
     function __construct()
     {
@@ -25,6 +26,7 @@ class ServerHandler extends VKCallbackApiServerHandler
         $this->community_token = $config['community_token'];
         $this->api_v = $config['api_v'];
         $this->access_array = $config['access_array'];
+        $this->account_id = $config['account_id'];
     }
 
     function confirmation(int $group_id, ?string $secret)
@@ -56,9 +58,38 @@ class ServerHandler extends VKCallbackApiServerHandler
             if ($timestamp_from == False || $timestamp_to == False){
                 die('ok');
             }
-            $message_to_send = "test";
-            $result = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
-            Utils::sendMsg($vk, $this->community_token, $from, $message_to_send);
+//            $message_to_send = "test";
+//            $leads = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
+            $ids_campaigns = Utils::getCampaigns($vk, $user_token, $this->account_id);
+            $spent = Utils::getSpentBudget($vk,
+                $user_token,
+                $this->account_id,
+                "campaign",
+                $ids_campaigns,
+                "day",
+                (string)date("Y-m-d", $timestamp_from),
+                (string)date("Y-m-d", $timestamp_to)
+//                "0",
+//                "0"
+            );
+//            $ids_campaigns_arr = explode(',', $ids_campaigns);
+//            $spent_dict = [];
+            $res = "";
+            foreach ($spent as $campaign)
+            {
+//                if (!array_key_exists('spent', $campaign['stats'][0])) $spent_money = '0.00';
+//                else $spent_money = $campaign['stats'][0]['spent'];
+                $stats_money_day = $campaign['stats'];
+                $spent_money = 0;
+                foreach ($stats_money_day as $day)
+                {
+                    if (!array_key_exists("spent", $day)) continue;
+                    $spent_money += $day['spent'];
+                }
+                if ($spent_money != 0) $res.="ID кампании: ".$campaign['id']."\nПотрачено средств: ".$spent_money."\n\n";
+            }
+            $spent_dict = [];
+            Utils::sendMsg($vk, $this->community_token, $from, $res);
         }
         echo 'ok';
     }
