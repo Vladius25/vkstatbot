@@ -1,6 +1,8 @@
 {
   "require": {
     "vkcom/vk-php-sdk": "^5.101",
-    "ext-pgsql": "*"
+    "ext-json": "^7.4",
+    "ext-pgsql": "^7.4",
+    "ext-pdo_pgsql": "^7.4"
   }
 }
