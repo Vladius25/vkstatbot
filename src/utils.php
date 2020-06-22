@@ -54,4 +54,9 @@ class Utils
             'date_to' => $date_to,
         ]);
     }
+
+    public static function getAds(VKApiClient $vk, string $user_token, int $account_id)
+    {
+        return $vk->ads()->getAdsLayout($user_token, ['account_id' => $account_id]);
+    }
 }

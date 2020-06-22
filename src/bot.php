@@ -43,7 +43,7 @@ class ServerHandler extends VKCallbackApiServerHandler
             $vk = new VKApiClient($this->api_v);
             $auth = new Authorization();
             $user_token = $auth->getToken();
-            if(is_null($user_token)) {
+            if (is_null($user_token)) {
                 Utils::sendMsg($vk, $this->community_token, $from, "Необходимо авторизоваться");
                 Utils::sendMsg($vk, $this->community_token, $from, $auth->makeTokenRequest());
                 die('ok');
@@ -55,7 +55,7 @@ class ServerHandler extends VKCallbackApiServerHandler
             }
             $timestamp_from = strtotime($splitted_dates[0]);
             $timestamp_to = strtotime($splitted_dates[1]);
-            if ($timestamp_from == False || $timestamp_to == False){
+            if ($timestamp_from == False || $timestamp_to == False) {
                 die('ok');
             }
 //            $message_to_send = "test";
@@ -74,21 +74,50 @@ class ServerHandler extends VKCallbackApiServerHandler
             );
 //            $ids_campaigns_arr = explode(',', $ids_campaigns);
 //            $spent_dict = [];
-            $res = "";
-            foreach ($spent as $campaign)
-            {
+            $campaigns_spent_dict = [];
+            foreach ($spent as $campaign) {
 //                if (!array_key_exists('spent', $campaign['stats'][0])) $spent_money = '0.00';
 //                else $spent_money = $campaign['stats'][0]['spent'];
                 $stats_money_day = $campaign['stats'];
                 $spent_money = 0;
-                foreach ($stats_money_day as $day)
-                {
+                foreach ($stats_money_day as $day) {
                     if (!array_key_exists("spent", $day)) continue;
                     $spent_money += $day['spent'];
                 }
-                if ($spent_money != 0) $res.="ID кампании: ".$campaign['id']."\nПотрачено средств: ".$spent_money."\n\n";
+
+                if (array_key_exists($campaign['id'], $campaigns_spent_dict)) $campaigns_spent_dict[$campaign['id']] += $spent_money;
+                else $campaigns_spent_dict[$campaign['id']] = $spent_money;
+
             }
+            $ads_layout = Utils::getAds($vk, $user_token, $this->account_id);
             $spent_dict = [];
+            $used_campaigns = [];
+            foreach ($ads_layout as $layout) {
+                if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4)
+                {
+                    $link_of_group = $layout['link_url'];
+                }
+                else {
+                    preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
+                    $id_of_group = $matches[0];
+                    $link_of_group = "http://vk.com/club".$id_of_group;
+                }
+
+                if (!array_key_exists($link_of_group, $spent_dict)) {
+                    $spent_dict[$link_of_group] = 0;
+                }
+                if (!in_array($layout['campaign_id'], $used_campaigns)) {
+                    $spent_dict[$link_of_group] += $campaigns_spent_dict[$layout['campaign_id']];
+                    array_push($used_campaigns, $layout['campaign_id']);
+                }
+            }
+            $res = "";
+            foreach ($spent_dict as $group_link => $spent) {
+                if ($spent != 0)
+                {
+                    $res .= "ID группы: " . $group_link . "\nПотрачено средств: " . $spent . "\n\n";
+                }
+            }
             Utils::sendMsg($vk, $this->community_token, $from, $res);
         }
         echo 'ok';
