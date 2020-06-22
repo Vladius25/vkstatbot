@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Скрипт предназачен для заполнения PostgreSQL
 данными о первом сообщении в каждой переписке сообщества в вк
@@ -28,11 +29,19 @@ def create_bd_table(cursor):
                    "date timestamp, unique(group_id, user_id));")
 
 
+def get_first_msg_date(vk, user_id):
+    history = vk.messages.getHistory(count=200, user_id=user_id)["items"]
+    for message in history:
+        if message["from_id"] > 0:
+            return message["date"]
+    return None
+
+
 def insert_data_in_bd(vk, cursor, converstaions, group_id):
     for user_id in tqdm(converstaions):
-        date = vk.messages.getHistory(offset=0, count=1, user_id=user_id)["items"][0]["date"]
-        cursor.execute("INSERT INTO first_msg (group_id, user_id, date) VALUES (%s, %s, to_timestamp(%s))",
-                       (group_id, user_id, date))
+        if date := get_first_msg_date(vk, user_id):
+            cursor.execute("INSERT INTO first_msg (group_id, user_id, date) VALUES (%s, %s, to_timestamp(%s))",
+                           (group_id, user_id, date))
 
 
 def main():
