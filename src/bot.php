@@ -58,8 +58,8 @@ class ServerHandler extends VKCallbackApiServerHandler
             if (count($splitted_dates) != 2) {
                 die('ok');
             }
-            $timestamp_from = strtotime($splitted_dates[0]);
-            $timestamp_to = strtotime($splitted_dates[1]);
+            $timestamp_from = strtotime("{$splitted_dates[0]} 00:00:00");
+            $timestamp_to = strtotime("{$splitted_dates[1]} 23:59:59");
             if ($timestamp_from == False || $timestamp_to == False) {
                 die('ok');
             }
@@ -68,7 +68,6 @@ class ServerHandler extends VKCallbackApiServerHandler
                 Utils::sendMsg($vk, $this->community_token, $from, "Лидов в группе ".$key." за указанный период: ".$leads_amount);
             }
         } else {
-            date_default_timezone_set('Europe/Moscow');
             $date = date('Y-m-d H:i:s');
             $query = "INSERT INTO first_msg (group_id, user_id, date) VALUES ({$group_id}, {$from}, '{$date}') ON CONFLICT DO NOTHING;";
             pg_query($query) or die('Query failed: ' . pg_last_error());

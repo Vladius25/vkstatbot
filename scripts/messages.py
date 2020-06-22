@@ -30,7 +30,7 @@ def create_bd_table(cursor):
 
 
 def get_first_msg_date(vk, user_id):
-    history = vk.messages.getHistory(count=200, user_id=user_id)["items"]
+    history = vk.messages.getHistory(count=200, rev=1, user_id=user_id)["items"]
     for message in history:
         if message["from_id"] > 0:
             return message["date"]
