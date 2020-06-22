@@ -58,7 +58,6 @@ class ServerHandler extends VKCallbackApiServerHandler
             if ($timestamp_from == False || $timestamp_to == False) {
                 die('ok');
             }
-//            $message_to_send = "test";
 //            $leads = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
             $ids_campaigns = Utils::getCampaigns($vk, $user_token, $this->account_id);
             $spent = Utils::getSpentBudget($vk,
@@ -69,15 +68,9 @@ class ServerHandler extends VKCallbackApiServerHandler
                 "day",
                 (string)date("Y-m-d", $timestamp_from),
                 (string)date("Y-m-d", $timestamp_to)
-//                "0",
-//                "0"
             );
-//            $ids_campaigns_arr = explode(',', $ids_campaigns);
-//            $spent_dict = [];
             $campaigns_spent_dict = [];
             foreach ($spent as $campaign) {
-//                if (!array_key_exists('spent', $campaign['stats'][0])) $spent_money = '0.00';
-//                else $spent_money = $campaign['stats'][0]['spent'];
                 $stats_money_day = $campaign['stats'];
                 $spent_money = 0;
                 foreach ($stats_money_day as $day) {
