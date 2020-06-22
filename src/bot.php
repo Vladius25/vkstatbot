@@ -40,6 +40,8 @@ class ServerHandler extends VKCallbackApiServerHandler
     public function messageNew(int $group_id, ?string $secret, array $object)
     {
         $from = $object['message']->from_id;
+        $dbconn = pg_connect("host=localhost dbname=vkstatbot user=postgres password={$this->pg_pass}}")
+            or die('Could not connect: ' . pg_last_error());
         if ($group_id === $this->group_id and in_array($from, $this->access_array)) {
             $vk = new VKApiClient($this->api_v);
             $auth = new Authorization();
@@ -59,11 +61,11 @@ class ServerHandler extends VKCallbackApiServerHandler
             if ($timestamp_from == False || $timestamp_to == False) {
                 die('ok');
             }
-            $message_to_send = "test";
-            Utils::sendMsg($vk, $this->community_token, $from, $message_to_send);
+            foreach ($this->communities as $key => $value) {
+                $leads_amount = Utils::getLeads($dbconn, $key, $timestamp_from, $timestamp_to);
+                Utils::sendMsg($vk, $this->community_token, $from, "Лидов в группе ".$key." за указанный период: ".$leads_amount);
+            }
         } else {
-            $dbconn = pg_connect("host=localhost dbname=vkstatbot user=postgres password={$this->pg_pass}}")
-            or die('Could not connect: ' . pg_last_error());
             date_default_timezone_set('Europe/Moscow');
             $date = date('Y-m-d H:i:s');
             $query = "INSERT INTO first_msg (group_id, user_id, date) VALUES ({$group_id}, {$from}, '{$date}') ON CONFLICT DO NOTHING;";
