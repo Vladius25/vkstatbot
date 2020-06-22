@@ -1,6 +1,6 @@
 {
   "require": {
     "vkcom/vk-php-sdk": "^5.101",
-    "ext-json": "*"
+    "ext-pgsql": "*"
   }
 }

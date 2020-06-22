@@ -16,7 +16,7 @@ class Authorization
     const SCOPE = array(VKOAuthUserScope::STATS, VKOAuthUserScope::ADS, VKOAuthUserScope::OFFLINE);
     const STATE = "dngjksdhg";
     private $token_file;
-    private $group_token;
+    private $community_token;
     private $group_id;
     private $app_id;
     private $app_secret;
@@ -30,7 +30,7 @@ class Authorization
         $this->app_secret = $config['app_secret'];
         $this->redirect_uri = $config['redirect_uri'];
         $this->token_file = $config['token_file'];
-        $this->group_token = $config['community_token'];
+        $this->community_token = $config['community_token'];
         $this->group_id = $config['group_id'];
         $this->api_v = $config['api_v'];
     }
@@ -55,7 +55,7 @@ class Authorization
         $vk = new VKApiClient($this->api_v);
         $response = $oauth->getAccessToken($this->app_id, $this->app_secret, $this->redirect_uri, $code);
         file_put_contents($this->token_file, $response['access_token']);
-        Utils::sendMsg($vk, $this->group_token, $response['user_id'], "Вы успешно авторизованы");
+        Utils::sendMsg($vk, $this->community_token, $response['user_id'], "Вы успешно авторизованы");
         echo /** @lang js */ '<script>window.close();</script>';
         exit(0);
     }
@@ -73,7 +73,11 @@ class Authorization
     {
         $vk = new VKApiClient($this->api_v);
         try {
-            Utils::getLids($vk, $token, $this->group_id, 1, 1);
+            $vk->stats()->get($token, [
+                'group_id' => $this->group_id,
+                'timestamp_from' => 0,
+                'timestamp_to' => 1
+            ]);
             return True;
         } catch (VKApiException $e) {
             return False;
