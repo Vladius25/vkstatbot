@@ -73,7 +73,7 @@ class ServerHandler extends VKCallbackApiServerHandler
             $ads_layout = Utils::getAds($vk, $user_token, $this->account_id);
             $used_campaigns = [];
             $matches = [];
-            list($spent_dict, $matches, $used_campaigns) = $this->getSpentPerGroup($ads_layout, $matches, $used_campaigns, $campaigns_spent_dict);
+            $spent_dict = Utils::getSpentPerGroup($ads_layout, $matches, $used_campaigns, $campaigns_spent_dict);
             $res = "";
             foreach ($spent_dict as $group_link => $spent) {
                 if ($spent != 0)
@@ -84,36 +84,6 @@ class ServerHandler extends VKCallbackApiServerHandler
             Utils::sendMsg($vk, $this->community_token, $from, $res);
         }
         echo 'ok';
-    }
-
-    /**
-     * @param $ads_layout
-     * @param $matches
-     * @param array $used_campaigns
-     * @param $campaigns_spent_dict
-     * @return array
-     */
-    public function getSpentPerGroup($ads_layout, $matches, array $used_campaigns, $campaigns_spent_dict): array
-    {
-        $spent_dict = [];
-        foreach ($ads_layout as $layout) {
-            if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4) {
-                $link_of_group = $layout['link_url'];
-            } else {
-                preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
-                $id_of_group = $matches[0];
-                $link_of_group = "http://vk.com/club" . $id_of_group;
-            }
-
-            if (!array_key_exists($link_of_group, $spent_dict)) {
-                $spent_dict[$link_of_group] = 0;
-            }
-            if (!in_array($layout['campaign_id'], $used_campaigns)) {
-                $spent_dict[$link_of_group] += $campaigns_spent_dict[$layout['campaign_id']];
-                array_push($used_campaigns, $layout['campaign_id']);
-            }
-        }
-        return array($spent_dict, $matches, $used_campaigns);
     }
 }
 

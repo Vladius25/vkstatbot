@@ -77,4 +77,27 @@ class Utils
         }
         return $campaigns_spent_dict;
     }
+
+    public static function getSpentPerGroup($ads_layout, $matches, array $used_campaigns, $campaigns_spent_dict): array
+    {
+        $spent_dict = [];
+        foreach ($ads_layout as $layout) {
+            if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4) {
+                $link_of_group = $layout['link_url'];
+            } else {
+                preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
+                $id_of_group = $matches[0];
+                $link_of_group = "http://vk.com/club" . $id_of_group;
+            }
+
+            if (!array_key_exists($link_of_group, $spent_dict)) {
+                $spent_dict[$link_of_group] = 0;
+            }
+            if (!in_array($layout['campaign_id'], $used_campaigns)) {
+                $spent_dict[$link_of_group] += $campaigns_spent_dict[$layout['campaign_id']];
+                array_push($used_campaigns, $layout['campaign_id']);
+            }
+        }
+        return $spent_dict;
+    }
 }
