@@ -12,8 +12,7 @@
 ## Запуск в Docker
 Проект можно запустить в Docker (Nginx, PHP-FPM, PostgreSQL):
 ```bash
-cd src; composer install; cd ..
-docker-compose up
+docker-compose up --build
 ``` 
 
 ## Инструкция
