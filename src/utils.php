@@ -59,4 +59,22 @@ class Utils
     {
         return $vk->ads()->getAdsLayout($user_token, ['account_id' => $account_id]);
     }
+
+    public static function getSpentPerCampaign($spent): array
+    {
+        $campaigns_spent_dict = [];
+        foreach ($spent as $campaign) {
+            $stats_money_day = $campaign['stats'];
+            $spent_money = 0;
+            foreach ($stats_money_day as $day) {
+                if (!array_key_exists("spent", $day)) continue;
+                $spent_money += $day['spent'];
+            }
+
+            if (array_key_exists($campaign['id'], $campaigns_spent_dict)) $campaigns_spent_dict[$campaign['id']] += $spent_money;
+            else $campaigns_spent_dict[$campaign['id']] = $spent_money;
+
+        }
+        return $campaigns_spent_dict;
+    }
 }

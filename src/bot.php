@@ -69,29 +69,11 @@ class ServerHandler extends VKCallbackApiServerHandler
                 (string)date("Y-m-d", $timestamp_from),
                 (string)date("Y-m-d", $timestamp_to)
             );
-            $campaigns_spent_dict = $this->getSpentPerCampaign($spent);
+            $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
             $ads_layout = Utils::getAds($vk, $user_token, $this->account_id);
-            $spent_dict = [];
             $used_campaigns = [];
-            foreach ($ads_layout as $layout) {
-                if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4)
-                {
-                    $link_of_group = $layout['link_url'];
-                }
-                else {
-                    preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
-                    $id_of_group = $matches[0];
-                    $link_of_group = "http://vk.com/club".$id_of_group;
-                }
-
-                if (!array_key_exists($link_of_group, $spent_dict)) {
-                    $spent_dict[$link_of_group] = 0;
-                }
-                if (!in_array($layout['campaign_id'], $used_campaigns)) {
-                    $spent_dict[$link_of_group] += $campaigns_spent_dict[$layout['campaign_id']];
-                    array_push($used_campaigns, $layout['campaign_id']);
-                }
-            }
+            $matches = [];
+            list($spent_dict, $matches, $used_campaigns) = $this->getSpentPerGroup($ads_layout, $matches, $used_campaigns, $campaigns_spent_dict);
             $res = "";
             foreach ($spent_dict as $group_link => $spent) {
                 if ($spent != 0)
@@ -105,25 +87,33 @@ class ServerHandler extends VKCallbackApiServerHandler
     }
 
     /**
-     * @param $spent
+     * @param $ads_layout
+     * @param $matches
+     * @param array $used_campaigns
+     * @param $campaigns_spent_dict
      * @return array
      */
-    public function getSpentPerCampaign($spent): array
+    public function getSpentPerGroup($ads_layout, $matches, array $used_campaigns, $campaigns_spent_dict): array
     {
-        $campaigns_spent_dict = [];
-        foreach ($spent as $campaign) {
-            $stats_money_day = $campaign['stats'];
-            $spent_money = 0;
-            foreach ($stats_money_day as $day) {
-                if (!array_key_exists("spent", $day)) continue;
-                $spent_money += $day['spent'];
+        $spent_dict = [];
+        foreach ($ads_layout as $layout) {
+            if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4) {
+                $link_of_group = $layout['link_url'];
+            } else {
+                preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
+                $id_of_group = $matches[0];
+                $link_of_group = "http://vk.com/club" . $id_of_group;
             }
 
-            if (array_key_exists($campaign['id'], $campaigns_spent_dict)) $campaigns_spent_dict[$campaign['id']] += $spent_money;
-            else $campaigns_spent_dict[$campaign['id']] = $spent_money;
-
+            if (!array_key_exists($link_of_group, $spent_dict)) {
+                $spent_dict[$link_of_group] = 0;
+            }
+            if (!in_array($layout['campaign_id'], $used_campaigns)) {
+                $spent_dict[$link_of_group] += $campaigns_spent_dict[$layout['campaign_id']];
+                array_push($used_campaigns, $layout['campaign_id']);
+            }
         }
-        return $campaigns_spent_dict;
+        return array($spent_dict, $matches, $used_campaigns);
     }
 }
 
