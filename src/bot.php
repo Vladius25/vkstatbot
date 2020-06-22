@@ -46,17 +46,17 @@ class ServerHandler extends VKCallbackApiServerHandler
             if (is_null($user_token)) {
                 Utils::sendMsg($vk, $this->community_token, $from, "Необходимо авторизоваться");
                 Utils::sendMsg($vk, $this->community_token, $from, $auth->makeTokenRequest());
-                die('ok');
+                exit('ok');
             }
             $message_text = $object['message']->text;
             $splitted_dates = explode('-', $message_text);
             if (count($splitted_dates) != 2) {
-                die('ok');
+                exit('ok');
             }
             $timestamp_from = strtotime($splitted_dates[0]);
             $timestamp_to = strtotime($splitted_dates[1]);
             if ($timestamp_from == False || $timestamp_to == False) {
-                die('ok');
+                exit('ok');
             }
 //            $leads = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
             $ids_campaigns = Utils::getCampaigns($vk, $user_token, $this->account_id);
@@ -69,19 +69,7 @@ class ServerHandler extends VKCallbackApiServerHandler
                 (string)date("Y-m-d", $timestamp_from),
                 (string)date("Y-m-d", $timestamp_to)
             );
-            $campaigns_spent_dict = [];
-            foreach ($spent as $campaign) {
-                $stats_money_day = $campaign['stats'];
-                $spent_money = 0;
-                foreach ($stats_money_day as $day) {
-                    if (!array_key_exists("spent", $day)) continue;
-                    $spent_money += $day['spent'];
-                }
-
-                if (array_key_exists($campaign['id'], $campaigns_spent_dict)) $campaigns_spent_dict[$campaign['id']] += $spent_money;
-                else $campaigns_spent_dict[$campaign['id']] = $spent_money;
-
-            }
+            $campaigns_spent_dict = $this->getSpentPerCampaign($spent);
             $ads_layout = Utils::getAds($vk, $user_token, $this->account_id);
             $spent_dict = [];
             $used_campaigns = [];
@@ -114,6 +102,28 @@ class ServerHandler extends VKCallbackApiServerHandler
             Utils::sendMsg($vk, $this->community_token, $from, $res);
         }
         echo 'ok';
+    }
+
+    /**
+     * @param $spent
+     * @return array
+     */
+    public function getSpentPerCampaign($spent): array
+    {
+        $campaigns_spent_dict = [];
+        foreach ($spent as $campaign) {
+            $stats_money_day = $campaign['stats'];
+            $spent_money = 0;
+            foreach ($stats_money_day as $day) {
+                if (!array_key_exists("spent", $day)) continue;
+                $spent_money += $day['spent'];
+            }
+
+            if (array_key_exists($campaign['id'], $campaigns_spent_dict)) $campaigns_spent_dict[$campaign['id']] += $spent_money;
+            else $campaigns_spent_dict[$campaign['id']] = $spent_money;
+
+        }
+        return $campaigns_spent_dict;
     }
 }
 
