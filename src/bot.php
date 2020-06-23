@@ -33,7 +33,7 @@ class ServerHandler extends VKCallbackApiServerHandler
 
     function confirmation(int $group_id, ?string $secret)
     {
-        if(!array_key_exists($group_id, $this->communities))
+        if (!array_key_exists($group_id, $this->communities))
             exit("Group is not in allowed list");
         $group = $this->communities[$group_id];
         if ($secret === $group['callback_secret']) {
@@ -45,7 +45,7 @@ class ServerHandler extends VKCallbackApiServerHandler
     {
         $from = $object['message']->from_id;
         pg_connect("host=localhost dbname=vkstatbot user={$this->pg_user} password={$this->pg_pass}")
-            or die('Could not connect: ' . pg_last_error());
+        or die('Could not connect: ' . pg_last_error());
         if ($group_id === $this->group_id and in_array($from, $this->access_array)) {
             $vk = new VKApiClient($this->api_v);
             $auth = new Authorization();
@@ -67,13 +67,16 @@ class ServerHandler extends VKCallbackApiServerHandler
                 exit('ok');
             }
             $message_to_send = "";
-            sleep(1);
             $spent_dict = Utils::getStats($vk, $user_token, $this->account_id, $timestamp_from, $timestamp_to);
             foreach ($spent_dict as $id => $spent) {
                 $leads_amount = Utils::getLeads($id, $timestamp_from, $timestamp_to);
-                $group_link = "vk.com/club".$id;
-                $message_to_send.="Сообщество: ".$group_link."\nПотрачено: ".$spent_dict[$id].
-                    "\nКоличество лидов: ".$leads_amount."\nЦена за лид: ".($spent/$leads_amount)."\n\n";
+                $group_link = "vk.com/club" . $id;
+                if ($spent_dict[$id] != 0)
+                    $message_to_send .= "Сообщество: " . $group_link .
+                        "\nПотрачено: " . $spent_dict[$id] .
+                        "\nКоличество лидов: " . $leads_amount .
+                        "\nЦена за лид: " . ($spent / $leads_amount) . "\n\n";
+
             }
             if ($message_to_send != "")
                 Utils::sendMsg($vk, $this->community_token, $from, $message_to_send);
