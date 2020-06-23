@@ -5,10 +5,6 @@ return array(
     'community_token' => '',
     // ID группы, с которой связан бот
     'group_id' => 0,
-    // Строка, которую должен вернуть бот для подтверждения
-    'callback_token' => '',
-    // Секретный ключ Callback api
-    'callback_secret' => '',
     // ID приложения, используемое для авторизации пользователя
     'app_id' => 0,
     // Секретный ключ приложения, используемое для авторизации пользователя
@@ -23,4 +19,17 @@ return array(
     'access_array' => [],
     // ID аккаунта рекламного кабинета
     'account_id' => 0,
+    // Пользователь PostgreSQL
+    'pg_user' => '',
+    // Пароль от PostgreSQL
+    'pg_pass' => '',
+    // Список обслуживаемых сообещств
+    // callback_secret - секретный ключ Callback api
+    // callback_token - строка, которую должен вернуть бот для подтверждения
+    'communities' => [
+        //Сообщетсво с ID = 0
+        0 => ['callback_secret' => '', 'callback_token' => ''],
+        //Сообщетсво с ID = 1
+        1 => ['callback_secret' => '', 'callback_token' => ''],
+    ]
 );

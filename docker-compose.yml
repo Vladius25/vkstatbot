@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   nginx:
@@ -10,16 +10,39 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ${PWD}/nginx.conf:/etc/nginx/nginx.conf:Z
+      - ${PWD}/config/nginx.conf:/etc/nginx/nginx.gconf:z
 
   phpfpm:
-    image: bitnami/php-fpm:latest
+    build:
+      context: ${PWD}
+      dockerfile: ${PWD}/config/Dockerfile
+    depends_on:
+      - db
     networks:
       - app-tier
     volumes:
-      - ${PWD}/src:/app:Z
+      - ${PWD}/src:/app:z
+
+  composer:
+    image: composer:latest
+    command: composer install --ignore-platform-reqs
+    volumes:
+      - ${PWD}/src:/app:z
+
+  db:
+    image: postgres:alpine
+    networks:
+      - app-tier
+    ports:
+      - 5432:5432
+    env_file:
+      - ${PWD}/config/db_env
+    volumes:
+      - pgdata:/var/lib/postgresql/data:z
 
 networks:
   app-tier:
     driver: bridge
 
+volumes:
+  pgdata:

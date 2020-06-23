@@ -35,13 +35,12 @@ class Utils
         ]);
     }
 
-    public static function getLids(VKApiClient $vk, string $user_token, int $group_id, int $timestamp_from, int $timestamp_to)
+    public static function getLeads($dbconn, int $group_id, int $timestamp_from, int $timestamp_to)
     {
-        return $vk->stats()->get($user_token, [
-            'group_id' => $group_id,
-            'timestamp_from' => $timestamp_from,
-            'timestamp_to' => $timestamp_to
-        ]);
+        $query = "SELECT COUNT(*) FROM first_msg WHERE group_id = {$group_id} " .
+            "AND date BETWEEN to_timestamp({$timestamp_from}) AND to_timestamp({$timestamp_to})";
+        $res = pg_query($query) or die('Query failed: ' . pg_last_error());
+        return pg_fetch_result($res, 'count');
     }
 
     public static function getCampaigns(VKApiClient $vk, string $user_token, int $account_id)

@@ -1,0 +1,15 @@
+[Unit]
+Description=Docker service for vkstatbot
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/opt/vkstatbot
+RestartSec=10
+Restart=on-failure
+ExecStop=/usr/bin/docker-compose down
+ExecStartPre=/usr/bin/docker-compose down 
+ExecStart=/usr/bin/docker-compose up --build
+
+[Install]
+WantedBy=multi-user.target
