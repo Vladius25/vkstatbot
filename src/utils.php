@@ -4,26 +4,6 @@ use VK\Client\VKApiClient;
 
 class Utils
 {
-    public static function getStats(VKApiClient $vk, string $user_token, int $account_id, int $timestamp_from, int $timestamp_to)
-    {
-        $ids_campaigns = Utils::getCampaigns($vk, $user_token, $account_id);
-        $spent = Utils::getSpentBudget($vk,
-            $user_token,
-            $account_id,
-            "campaign",
-            $ids_campaigns,
-            "day",
-            (string)date("Y-m-d", $timestamp_from),
-            (string)date("Y-m-d", $timestamp_to)
-        );
-        $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
-        $ads_layout = Utils::getAds($vk, $user_token, $account_id);
-        $used_campaigns = [];
-        $matches = [];
-        $spent_dict = Utils::getSpentPerGroup($ads_layout, $matches, $used_campaigns, $campaigns_spent_dict);
-        return $spent_dict;
-    }
-
     public static function sendMsg(VKApiClient $vk, string $community_token, int $user_id, string $msg)
     {
         if (is_null($msg))
@@ -33,6 +13,23 @@ class Utils
             'random_id' => rand(0, 9999),
             'message' => $msg
         ]);
+    }
+
+    public static function getStats(VKApiClient $vk, string $user_token, int $account_id, int $timestamp_from, int $timestamp_to)
+    {
+        $ids_campaigns = Utils::getCampaigns($vk, $user_token, $account_id);
+        $spent = $vk->ads()->getStatistics($user_token, [
+            'account_id' => $account_id,
+            'ids_type' => 'campaign',
+            'ids' => $ids_campaigns,
+            'period' => 'day',
+            'date_from' => (string)date("Y-m-d", $timestamp_from),
+            'date_to' => (string)date("Y-m-d", $timestamp_to),
+        ]);
+        $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
+        $ads_layout = $vk->ads()->getAdsLayout($user_token, ['account_id' => $account_id]);;
+        $spent_dict = Utils::getSpentPerGroup($ads_layout, $campaigns_spent_dict);
+        return $spent_dict;
     }
 
     public static function getLeads($dbconn, int $group_id, int $timestamp_from, int $timestamp_to)
@@ -54,31 +51,7 @@ class Utils
         return $campaigns_str;
     }
 
-    public static function getSpentBudget(VKApiClient $vk,
-                                          string $user_token,
-                                          int $account_id,
-                                          string $ids_type,
-                                          string $ids,
-                                          string $period,
-                                          string $date_from,
-                                          string $date_to)
-    {
-        return $vk->ads()->getStatistics($user_token, [
-            'account_id' => $account_id,
-            'ids_type' => $ids_type,
-            'ids' => $ids,
-            'period' => $period,
-            'date_from' => $date_from,
-            'date_to' => $date_to,
-        ]);
-    }
-
-    public static function getAds(VKApiClient $vk, string $user_token, int $account_id)
-    {
-        return $vk->ads()->getAdsLayout($user_token, ['account_id' => $account_id]);
-    }
-
-    public static function getSpentPerCampaign($spent): array
+    public static function getSpentPerCampaign($spent)
     {
         $campaigns_spent_dict = [];
         foreach ($spent as $campaign) {
@@ -89,15 +62,18 @@ class Utils
                 $spent_money += $day['spent'];
             }
 
-            if (array_key_exists($campaign['id'], $campaigns_spent_dict)) $campaigns_spent_dict[$campaign['id']] += $spent_money;
-            else $campaigns_spent_dict[$campaign['id']] = $spent_money;
+            if (array_key_exists($campaign['id'], $campaigns_spent_dict))
+                $campaigns_spent_dict[$campaign['id']] += $spent_money;
+            else
+                $campaigns_spent_dict[$campaign['id']] = $spent_money;
 
         }
         return $campaigns_spent_dict;
     }
 
-    public static function getSpentPerGroup($ads_layout, $matches, array $used_campaigns, $campaigns_spent_dict): array
+    public static function getSpentPerGroup($ads_layout, $campaigns_spent_dict)
     {
+        $used_campaigns = [];
         $spent_dict = [];
         foreach ($ads_layout as $layout) {
             if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4) {
