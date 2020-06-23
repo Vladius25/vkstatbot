@@ -28,11 +28,11 @@ class Utils
         ]);
         $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
         $ads_layout = $vk->ads()->getAdsLayout($user_token, ['account_id' => $account_id]);;
-        $spent_dict = Utils::getSpentPerGroup($ads_layout, $campaigns_spent_dict);
+        $spent_dict = Utils::getSpentPerGroup($vk, $user_token, $ads_layout, $campaigns_spent_dict);
         return $spent_dict;
     }
 
-    public static function getLeads($dbconn, int $group_id, int $timestamp_from, int $timestamp_to)
+    public static function getLeads(int $group_id, int $timestamp_from, int $timestamp_to)
     {
         $query = "SELECT COUNT(*) FROM first_msg WHERE group_id = {$group_id} " .
             "AND date BETWEEN to_timestamp({$timestamp_from}) AND to_timestamp({$timestamp_to})";
@@ -71,24 +71,30 @@ class Utils
         return $campaigns_spent_dict;
     }
 
-    public static function getSpentPerGroup($ads_layout, $campaigns_spent_dict)
+    public static function getSpentPerGroup(VKApiClient $vk, string $user_token, $ads_layout, $campaigns_spent_dict)
     {
         $used_campaigns = [];
         $spent_dict = [];
         foreach ($ads_layout as $layout) {
             if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4) {
-                $link_of_group = $layout['link_url'];
+                $url_parts = explode('/', $layout['link_url']);
+                $group_title = end($url_parts);
+                $group_id = $vk->groups()->getById($user_token,
+                    [
+                        'group_id' => $group_title,
+                    ])[0]['id'];
+
             } else {
                 preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
                 $id_of_group = $matches[0];
-                $link_of_group = "http://vk.com/club" . $id_of_group;
+                $group_id = $id_of_group;
             }
 
-            if (!array_key_exists($link_of_group, $spent_dict)) {
-                $spent_dict[$link_of_group] = 0;
+            if (!array_key_exists($group_id, $spent_dict)) {
+                $spent_dict[$group_id] = 0;
             }
             if (!in_array($layout['campaign_id'], $used_campaigns)) {
-                $spent_dict[$link_of_group] += $campaigns_spent_dict[$layout['campaign_id']];
+                $spent_dict[$group_id] += $campaigns_spent_dict[$layout['campaign_id']];
                 array_push($used_campaigns, $layout['campaign_id']);
             }
         }
