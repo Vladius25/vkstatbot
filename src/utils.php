@@ -4,9 +4,29 @@ use VK\Client\VKApiClient;
 
 class Utils
 {
-    public static function sendMsg(VKApiClient $vk, String $community_token, int $user_id, String $msg)
+    public static function getStats(VKApiClient $vk, string $user_token, int $account_id, int $timestamp_from, int $timestamp_to)
     {
-        if(is_null($msg))
+        $ids_campaigns = Utils::getCampaigns($vk, $user_token, $account_id);
+        $spent = Utils::getSpentBudget($vk,
+            $user_token,
+            $account_id,
+            "campaign",
+            $ids_campaigns,
+            "day",
+            (string)date("Y-m-d", $timestamp_from),
+            (string)date("Y-m-d", $timestamp_to)
+        );
+        $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
+        $ads_layout = Utils::getAds($vk, $user_token, $account_id);
+        $used_campaigns = [];
+        $matches = [];
+        $spent_dict = Utils::getSpentPerGroup($ads_layout, $matches, $used_campaigns, $campaigns_spent_dict);
+        return $spent_dict;
+    }
+
+    public static function sendMsg(VKApiClient $vk, string $community_token, int $user_id, string $msg)
+    {
+        if (is_null($msg))
             return;
         $vk->messages()->send($community_token, [
             'user_id' => $user_id,
@@ -15,7 +35,7 @@ class Utils
         ]);
     }
 
-    public static function getLids(VKApiClient $vk, String $user_token, int $group_id, int $timestamp_from, int $timestamp_to)
+    public static function getLids(VKApiClient $vk, string $user_token, int $group_id, int $timestamp_from, int $timestamp_to)
     {
         return $vk->stats()->get($user_token, [
             'group_id' => $group_id,
@@ -28,11 +48,10 @@ class Utils
     {
         $campaigns = $vk->ads()->getCampaigns($user_token, ['account_id' => $account_id]);
         $campaigns_str = "";
-        foreach ($campaigns as $campaign)
-        {
-            $campaigns_str.=$campaign['id'].",";
+        foreach ($campaigns as $campaign) {
+            $campaigns_str .= $campaign['id'] . ",";
         }
-        $campaigns_str = substr($campaigns_str,0,-1);
+        $campaigns_str = substr($campaigns_str, 0, -1);
         return $campaigns_str;
     }
 

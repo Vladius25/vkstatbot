@@ -38,6 +38,7 @@ class ServerHandler extends VKCallbackApiServerHandler
 
     public function messageNew(int $group_id, ?string $secret, array $object)
     {
+//        exit("ok");
         $from = $object['message']->from_id;
         if (in_array($from, $this->access_array)) {
             $vk = new VKApiClient($this->api_v);
@@ -58,22 +59,7 @@ class ServerHandler extends VKCallbackApiServerHandler
             if ($timestamp_from == False || $timestamp_to == False) {
                 exit('ok');
             }
-//            $leads = Utils::getLids($vk, $user_token, $this->group_id, $timestamp_from, $timestamp_to);
-            $ids_campaigns = Utils::getCampaigns($vk, $user_token, $this->account_id);
-            $spent = Utils::getSpentBudget($vk,
-                $user_token,
-                $this->account_id,
-                "campaign",
-                $ids_campaigns,
-                "day",
-                (string)date("Y-m-d", $timestamp_from),
-                (string)date("Y-m-d", $timestamp_to)
-            );
-            $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
-            $ads_layout = Utils::getAds($vk, $user_token, $this->account_id);
-            $used_campaigns = [];
-            $matches = [];
-            $spent_dict = Utils::getSpentPerGroup($ads_layout, $matches, $used_campaigns, $campaigns_spent_dict);
+            $spent_dict = Utils::getStats($vk, $user_token, $this->account_id, $timestamp_from, $timestamp_to);
             $res = "";
             foreach ($spent_dict as $group_link => $spent) {
                 if ($spent != 0)
