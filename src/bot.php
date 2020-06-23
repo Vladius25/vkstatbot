@@ -67,6 +67,7 @@ class ServerHandler extends VKCallbackApiServerHandler
                 exit('ok');
             }
             $message_to_send = "";
+            sleep(1);
             $spent_dict = Utils::getStats($vk, $user_token, $this->account_id, $timestamp_from, $timestamp_to);
             foreach ($spent_dict as $id => $spent) {
                 $leads_amount = Utils::getLeads($id, $timestamp_from, $timestamp_to);

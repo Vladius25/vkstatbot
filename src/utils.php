@@ -18,6 +18,7 @@ class Utils
     public static function getStats(VKApiClient $vk, string $user_token, int $account_id, int $timestamp_from, int $timestamp_to)
     {
         $ids_campaigns = Utils::getCampaigns($vk, $user_token, $account_id);
+        sleep(1);
         $spent = $vk->ads()->getStatistics($user_token, [
             'account_id' => $account_id,
             'ids_type' => 'campaign',
@@ -26,6 +27,7 @@ class Utils
             'date_from' => (string)date("Y-m-d", $timestamp_from),
             'date_to' => (string)date("Y-m-d", $timestamp_to),
         ]);
+        sleep(1);
         $campaigns_spent_dict = Utils::getSpentPerCampaign($spent);
         $ads_layout = $vk->ads()->getAdsLayout($user_token, ['account_id' => $account_id]);;
         $spent_dict = Utils::getSpentPerGroup($vk, $user_token, $ads_layout, $campaigns_spent_dict);
