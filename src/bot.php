@@ -44,7 +44,7 @@ class ServerHandler extends VKCallbackApiServerHandler
     public function messageNew(int $group_id, ?string $secret, array $object)
     {
         $from = $object['message']->from_id;
-        $dbconn = pg_connect("host=localhost dbname=vkstatbot user={$this->pg_user} password={$this->pg_pass}")
+        pg_connect("host=localhost dbname=vkstatbot user={$this->pg_user} password={$this->pg_pass}")
             or die('Could not connect: ' . pg_last_error());
         if ($group_id === $this->group_id and in_array($from, $this->access_array)) {
             $vk = new VKApiClient($this->api_v);
