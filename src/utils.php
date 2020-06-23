@@ -47,7 +47,7 @@ class Utils
         $campaigns = $vk->ads()->getCampaigns($user_token, ['account_id' => $account_id]);
         $campaigns_str = "";
         foreach ($campaigns as $campaign) {
-            $campaigns_str .= $campaign['id'] . ",";
+            $campaigns_str .= $campaign['id'] . ',';
         }
         $campaigns_str = substr($campaigns_str, 0, -1);
         return $campaigns_str;
@@ -73,19 +73,38 @@ class Utils
         return $campaigns_spent_dict;
     }
 
+    public static function getScreenName(string $uri) {
+        $url_parts = explode('/', $uri);
+        return end($url_parts);
+    }
+
+    public static function getGroupsIdsByLayouts(VKApiClient $vk, $ads_layout, string $user_token)
+    {
+        $named_groups = [];
+        $screen_names = [];
+        foreach ($ads_layout as $layout) {
+            if (in_array($layout['ad_format'], [1, 2, 4])) {
+                $screen_name = self::getScreenName($layout['link_url']);
+                array_push($screen_names, $screen_name);
+            }
+        }
+        $screen_names = implode(',', array_unique($screen_names));
+        $groups = $vk->groups()->getById($user_token, ['group_ids' => $screen_names]);
+        foreach ($groups as $group)
+            $named_groups [$group['screen_name']] = $group['id'];
+
+        return $named_groups;
+    }
+
     public static function getSpentPerGroup(VKApiClient $vk, string $user_token, $ads_layout, $campaigns_spent_dict)
     {
         $used_campaigns = [];
         $spent_dict = [];
+        $named_groups = self::getGroupsIdsByLayouts($vk, $ads_layout, $user_token);
         foreach ($ads_layout as $layout) {
-            if ($layout['ad_format'] == 1 || $layout['ad_format'] == 2 || $layout['ad_format'] == 4) {
-                $url_parts = explode('/', $layout['link_url']);
-                $group_title = end($url_parts);
-                $group_id = $vk->groups()->getById($user_token,
-                    [
-                        'group_id' => $group_title,
-                    ])[0]['id'];
-
+            if (in_array($layout['ad_format'], [1, 2, 4])) {
+                $screen_name = self::getScreenName($layout['link_url']);
+                $group_id = $named_groups[$screen_name];
             } else {
                 preg_match('/(?<=-)\d+(?=_)/m', $layout['link_url'], $matches);
                 $id_of_group = $matches[0];
