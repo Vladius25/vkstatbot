@@ -13,6 +13,7 @@ class ServerHandler extends VKCallbackApiServerHandler
     private $group_id;
     private $api_v;
     private $access_array;
+    private $account_id;
     private $communities;
     private $pg_user;
     private $pg_pass;
@@ -24,6 +25,7 @@ class ServerHandler extends VKCallbackApiServerHandler
         $this->group_id = $config['group_id'];
         $this->api_v = $config['api_v'];
         $this->access_array = $config['access_array'];
+        $this->account_id = $config['account_id'];
         $this->communities = $config['communities'];
         $this->pg_user = $config['pg_user'];
         $this->pg_pass = $config['pg_pass'];
@@ -51,18 +53,20 @@ class ServerHandler extends VKCallbackApiServerHandler
             if (is_null($user_token)) {
                 Utils::sendMsg($vk, $this->community_token, $from, "Необходимо авторизоваться");
                 Utils::sendMsg($vk, $this->community_token, $from, $auth->makeTokenRequest());
-                die('ok');
+                exit('ok');
             }
             $message_text = $object['message']->text;
             $splitted_dates = explode('-', $message_text);
             if (count($splitted_dates) != 2) {
-                die('ok');
+                exit('ok');
             }
+
             $timestamp_from = strtotime("{$splitted_dates[0]} 00:00:00");
             $timestamp_to = strtotime("{$splitted_dates[1]} 23:59:59");
             if ($timestamp_from == False || $timestamp_to == False) {
-                die('ok');
+                exit('ok');
             }
+            $spent_dict = Utils::getStats($vk, $user_token, $this->account_id, $timestamp_from, $timestamp_to);
             foreach ($this->communities as $key => $value) {
                 $leads_amount = Utils::getLeads($dbconn, $key, $timestamp_from, $timestamp_to);
                 Utils::sendMsg($vk, $this->community_token, $from, "Лидов в группе ".$key." за указанный период: ".$leads_amount);
