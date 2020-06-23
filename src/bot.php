@@ -66,11 +66,18 @@ class ServerHandler extends VKCallbackApiServerHandler
             if ($timestamp_from == False || $timestamp_to == False) {
                 exit('ok');
             }
+            $message_to_send = "";
             $spent_dict = Utils::getStats($vk, $user_token, $this->account_id, $timestamp_from, $timestamp_to);
-            foreach ($this->communities as $key => $value) {
-                $leads_amount = Utils::getLeads($dbconn, $key, $timestamp_from, $timestamp_to);
-                Utils::sendMsg($vk, $this->community_token, $from, "Лидов в группе ".$key." за указанный период: ".$leads_amount);
+            foreach ($spent_dict as $id => $spent) {
+                $leads_amount = Utils::getLeads($id, $timestamp_from, $timestamp_to);
+                $group_link = "vk.com/club".$id;
+                $message_to_send.="Сообщество: ".$group_link."\nПотрачено: ".$spent_dict[$id].
+                    "\nКоличество лидов: ".$leads_amount."\nЦена за лид: ".($spent/$leads_amount)."\n\n";
             }
+            if ($message_to_send != "")
+                Utils::sendMsg($vk, $this->community_token, $from, $message_to_send);
+            else
+                die('error');
         } else {
             $date = date('Y-m-d H:i:s');
             $query = "INSERT INTO first_msg (group_id, user_id, date) VALUES ({$group_id}, {$from}, '{$date}') ON CONFLICT DO NOTHING;";
