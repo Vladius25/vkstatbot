@@ -43,7 +43,6 @@ class ServerHandler extends VKCallbackApiServerHandler
 
     public function messageNew(int $group_id, ?string $secret, array $object)
     {
-//        exit("ok");
         $from = $object['message']->from_id;
         $dbconn = pg_connect("host=localhost dbname=vkstatbot user={$this->pg_user} password={$this->pg_pass}")
             or die('Could not connect: ' . pg_last_error());
