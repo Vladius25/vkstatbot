@@ -17,8 +17,6 @@ return array(
     'api_v' => '',
     // ID пользователей, которым доступно общение с ботом
     'access_array' => [],
-    // ID аккаунта рекламного кабинета
-    'account_id' => 0,
     // Пользователь PostgreSQL
     'pg_user' => '',
     // Пароль от PostgreSQL
