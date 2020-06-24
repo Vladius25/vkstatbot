@@ -10,24 +10,24 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ${PWD}/config/nginx.conf:/etc/nginx/nginx.conf:z
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:z
 
   phpfpm:
     build:
-      context: ${PWD}
-      dockerfile: ${PWD}/config/Dockerfile
+      context: .
+      dockerfile: ./config/Dockerfile
     depends_on:
       - db
     networks:
       - app-tier
     volumes:
-      - ${PWD}/src:/app:z
+      - ./src:/app:z
 
   composer:
     image: composer:latest
     command: composer install --ignore-platform-reqs
     volumes:
-      - ${PWD}/src:/app:z
+      - ./src:/app:z
 
   db:
     image: postgres:alpine
@@ -36,7 +36,7 @@ services:
     ports:
       - 5432:5432
     env_file:
-      - ${PWD}/config/db_env
+      - ./config/db_env
     volumes:
       - pgdata:/var/lib/postgresql/data:z
 
