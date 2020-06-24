@@ -24,9 +24,9 @@ def collect_conversations(vk):
 
 
 def create_bd_table(cursor):
-    cursor.execute('DROP TABLE IF EXISTS first_msg;')
-    cursor.execute("CREATE TABLE first_msg (id serial PRIMARY KEY, group_id int NOT NULL, user_id int NOT NULL, "
-                   "date timestamp, unique(group_id, user_id));")
+    #cursor.execute('DROP TABLE IF EXISTS first_msg;')
+    cursor.execute("CREATE TABLE IF NOT EXISTS first_msg (id serial PRIMARY KEY, group_id int NOT NULL, "
+                   "user_id int NOT NULL, date timestamp, unique(group_id, user_id));")
 
 
 def get_first_msg_date(vk, user_id):
