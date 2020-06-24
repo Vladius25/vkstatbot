@@ -10,7 +10,7 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ${PWD}/config/nginx.conf:/etc/nginx/nginx.gconf:z
+      - ${PWD}/config/nginx.conf:/etc/nginx/nginx.conf:z
 
   phpfpm:
     build:
