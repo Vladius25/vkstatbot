@@ -13,7 +13,6 @@ class ServerHandler extends VKCallbackApiServerHandler
     private $group_id;
     private $api_v;
     private $access_array;
-    private $account_id;
     private $communities;
     private $pg_user;
     private $pg_pass;
@@ -25,7 +24,6 @@ class ServerHandler extends VKCallbackApiServerHandler
         $this->group_id = $config['group_id'];
         $this->api_v = $config['api_v'];
         $this->access_array = $config['access_array'];
-        $this->account_id = $config['account_id'];
         $this->communities = $config['communities'];
         $this->pg_user = $config['pg_user'];
         $this->pg_pass = $config['pg_pass'];
@@ -56,8 +54,10 @@ class ServerHandler extends VKCallbackApiServerHandler
                 exit('ok');
             }
             $message_text = $object['message']->text;
-            $splitted_dates = explode('-', $message_text);
-            if (count($splitted_dates) != 2) {
+            $chunks = explode(' ', $message_text);
+            $account_id = $chunks[1];
+            $splitted_dates = explode('-', $chunks[0]);
+            if (count($splitted_dates) != 2 || is_null($account_id)) {
                 exit('ok');
             }
 
@@ -67,7 +67,7 @@ class ServerHandler extends VKCallbackApiServerHandler
                 exit('ok');
             }
             $message_to_send = "";
-            $spent_dict = Utils::getStats($vk, $user_token, $this->account_id, $timestamp_from, $timestamp_to);
+            $spent_dict = Utils::getStats($vk, $user_token, $account_id, $timestamp_from, $timestamp_to);
             foreach ($spent_dict as $id => $spent) {
                 $leads_amount = Utils::getLeads($id, $timestamp_from, $timestamp_to);
                 $group_link = "vk.com/club" . $id;
