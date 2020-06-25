@@ -80,7 +80,6 @@ class Utils
 
     public static function getGroupsIdsByLayouts(VKApiClient $vk, $ads_layout, string $user_token)
     {
-        $named_groups = [];
         $screen_names = [];
         foreach ($ads_layout as $layout) {
             if (in_array($layout['ad_format'], [1, 2, 4])) {
@@ -89,6 +88,9 @@ class Utils
             }
         }
         $screen_names = implode(',', array_unique($screen_names));
+        if (empty($screen_names))
+            return [];
+        $named_groups = [];
         $groups = $vk->groups()->getById($user_token, ['group_ids' => $screen_names]);
         foreach ($groups as $group)
             $named_groups [$group['screen_name']] = $group['id'];
