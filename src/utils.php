@@ -82,7 +82,7 @@ class Utils
     {
         $screen_names = [];
         foreach ($ads_layout as $layout) {
-            if (in_array($layout['ad_format'], [1, 2, 4])) {
+            if (in_array($layout['ad_format'], [1, 2, 4, 12])) {
                 $screen_name = self::getScreenName($layout['link_url']);
                 array_push($screen_names, $screen_name);
             }
@@ -104,7 +104,7 @@ class Utils
         $spent_dict = [];
         $named_groups = self::getGroupsIdsByLayouts($vk, $ads_layout, $user_token);
         foreach ($ads_layout as $layout) {
-            if (in_array($layout['ad_format'], [1, 2, 4])) {
+            if (in_array($layout['ad_format'], [1, 2, 4, 12])) {
                 $screen_name = self::getScreenName($layout['link_url']);
                 $group_id = $named_groups[$screen_name];
             } else {
