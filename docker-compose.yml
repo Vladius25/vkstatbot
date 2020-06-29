@@ -48,6 +48,8 @@ services:
       - 8888:8888
     env_file:
       - ./config/db_env
+    volumes:
+      - pgadmdata:/var/lib/pgadmin
 
 networks:
   app-tier:
@@ -55,3 +57,4 @@ networks:
 
 volumes:
   pgdata:
+  pgadmdata:
