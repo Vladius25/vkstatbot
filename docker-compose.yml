@@ -40,6 +40,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data:z
 
+  pgadmin:
+    image: dpage/pgadmin4
+    networks:
+      - app-tier
+    ports:
+      - 8888:8888
+    env_file:
+      - ./config/db_env
+
 networks:
   app-tier:
     driver: bridge

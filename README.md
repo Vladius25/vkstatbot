@@ -10,7 +10,7 @@
  - VK_API 5.110
 
 ## Запуск в Docker
-Проект можно запустить в Docker (Nginx, PHP-FPM, PostgreSQL):
+Проект можно запустить в Docker (Nginx, PHP-FPM, PostgreSQL, pgAdmin):
 ```bash
 docker-compose up --build
 ``` 
